@@ -1,13 +1,9 @@
+import "dotenv/config";
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 
-// -------------------------------
-import mongoose from "mongoose";
-const DB_URI =
-  "mongodb+srv://Serhii:ITCd8kOOCTcF3U5I@cluster0.sszpohi.mongodb.net/db-contacts?retryWrites=true&w=majority&appName=Cluster0";
-
-// -------------------------------
+import "./db.js";
 
 import contactsRouter from "./routes/contactsRouter.js";
 
@@ -28,13 +24,4 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-mongoose
-  .connect(DB_URI)
-  .then(() => {
-    console.log("Database connection successful");
-    app.listen(3000);
-  })
-  .catch((error) => {
-    console.log(error.message);
-    process.exit(1);
-  });
+app.listen(3000);
