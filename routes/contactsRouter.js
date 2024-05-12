@@ -1,4 +1,5 @@
 import express from "express";
+import auditAcces from "../middlewares/auditAcces.js";
 import {
   getAllContacts,
   getOneContact,
@@ -15,12 +16,17 @@ contactsRouter.get("/", getAllContacts);
 
 contactsRouter.get("/:id", getOneContact);
 
-contactsRouter.delete("/:id", deleteContact);
+contactsRouter.delete("/:id", auditAcces, deleteContact);
 
 contactsRouter.post("/", jsonParcer, createContact);
 
-contactsRouter.patch("/:id/favorite", jsonParcer, updateStatusContact);
+contactsRouter.patch(
+  "/:id/favorite",
+  auditAcces,
+  jsonParcer,
+  updateStatusContact
+);
 
-contactsRouter.put("/:id", updateContact);
+contactsRouter.put("/:id", auditAcces, updateContact);
 
 export default contactsRouter;

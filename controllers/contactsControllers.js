@@ -10,7 +10,7 @@ import {
 
 export async function getAllContacts(req, res, next) {
   try {
-    const result = await Contact.find();
+    const result = await Contact.find({ owner: req.user.id });
 
     res.send(result);
   } catch (error) {
@@ -25,6 +25,11 @@ export async function getOneContact(req, res, next) {
     if (result === null) {
       throw HttpError(404);
     }
+
+    if (result.owner.toString() !== req.user.id) {
+      throw HttpError(404);
+    }
+
     res.send(result);
   } catch (error) {
     next(error);
@@ -39,6 +44,7 @@ export async function deleteContact(req, res, next) {
     if (result === null) {
       throw HttpError(404);
     }
+
     res.send(result);
   } catch (error) {
     next(error);
@@ -50,12 +56,14 @@ export async function createContact(req, res, next) {
     name: req.body.name,
     email: req.body.email,
     phone: req.body.phone,
+    owner: req.user.id,
   };
 
-  const { error, value } = contactCreateSchema.validate(contact);
+  const { error } = contactCreateSchema.validate(contact);
   if (typeof error !== "undefined") {
     return res.status(400).send("Bad request");
   }
+
   try {
     const result = await Contact.create(contact);
 
@@ -72,7 +80,7 @@ export async function updateStatusContact(req, res, next) {
     favorite: req.body.favorite,
   };
 
-  const { error, value } = contactFavoriteSchema.validate(contact);
+  const { error } = contactFavoriteSchema.validate(contact);
 
   if (typeof error !== "undefined") {
     return res.status(400).send("Bad request");
@@ -86,6 +94,7 @@ export async function updateStatusContact(req, res, next) {
     if (result === null) {
       throw HttpError(404);
     }
+
     res.status(200).send(result);
   } catch (error) {
     next(error);
@@ -102,7 +111,7 @@ export async function updateContact(req, res, next) {
     favorite: req.body.favorite,
   };
 
-  const { error, value } = contactUpdateSchema.validate(contact);
+  const { error } = contactUpdateSchema.validate(contact);
   if (typeof error !== "undefined") {
     return res.status(400).send("Badd request");
   }
