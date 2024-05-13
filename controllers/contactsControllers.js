@@ -74,7 +74,7 @@ export async function createContact(req, res, next) {
 }
 
 export async function updateStatusContact(req, res, next) {
-  const { id } = req.params;
+  const { _id } = req.params;
 
   const contact = {
     favorite: req.body.favorite,
@@ -87,9 +87,7 @@ export async function updateStatusContact(req, res, next) {
   }
 
   try {
-    const result = await Contact.findByIdAndUpdate(id, contact, {
-      new: true,
-    });
+    const result = await Contact.findOneAndUpdate(_id, contact, { new: true });
 
     if (result === null) {
       throw HttpError(404);
@@ -102,7 +100,7 @@ export async function updateStatusContact(req, res, next) {
 }
 
 export async function updateContact(req, res, next) {
-  const { id } = req.params;
+  const { _id } = req.params;
 
   const contact = {
     name: req.body.name,
@@ -117,9 +115,7 @@ export async function updateContact(req, res, next) {
   }
 
   try {
-    const result = await Contact.findByIdAndUpdate(id, contact, {
-      new: true,
-    });
+    const result = await Contact.findOneAndUpdate(_id, contact, { new: true });
 
     if (result === null) {
       throw HttpError(404);
