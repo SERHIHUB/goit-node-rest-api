@@ -19,9 +19,9 @@ export async function getAllContacts(req, res, next) {
 }
 
 export async function getOneContact(req, res, next) {
-  const { id } = req.params;
+  const { _id } = req.params;
   try {
-    const result = await Contact.findById(id);
+    const result = await Contact.findOne(_id);
     if (result === null) {
       throw HttpError(404);
     }
@@ -37,10 +37,10 @@ export async function getOneContact(req, res, next) {
 }
 
 export async function deleteContact(req, res, next) {
-  const { id } = req.params;
+  const { _id } = req.params;
 
   try {
-    const result = await Contact.findByIdAndDelete(id);
+    const result = await Contact.findOneAndDelete(_id);
     if (result === null) {
       throw HttpError(404);
     }
