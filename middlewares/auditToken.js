@@ -3,15 +3,15 @@ import HttpError from "../helpers/HttpError.js";
 import User from "../models/user.js";
 
 async function auditToken(req, res, next) {
-  const { autorization } = req.headers;
+  const { authorization } = req.headers;
 
-  if (typeof autorization === "undefined") {
-    res.status(401).send({ message: "Not authorized" });
+  if (typeof authorization === "undefined") {
+    return res.status(401).send({ message: "Not authorized" });
   }
 
-  const [bearer, token] = autorization.split(" ", 2);
+  const [bearer, token] = authorization.split(" ", 2);
 
-  if (bearer !== "Bearer") {
+  if (bearer !== "Bearer" || !token) {
     return res.status(401).send({ message: "Not authorized" });
   }
 
@@ -20,11 +20,11 @@ async function auditToken(req, res, next) {
     const user = await User.findById(id);
 
     if (user.token === null) {
-      next(HttpError(401));
+      return next(HttpError(401));
     }
 
     if (!user) {
-      next(HttpError(401));
+      return next(HttpError(401));
     }
 
     req.user = user;
