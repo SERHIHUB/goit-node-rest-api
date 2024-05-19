@@ -21,11 +21,6 @@ authRouter.post("/logout", auditToken, logout);
 
 authRouter.get("/current", auditToken, jsonParcer, currentUser);
 
-authRouter.patch(
-  "/avatars",
-  upload.single("avatarka"),
-  auditToken,
-  usersAvatar
-);
+authRouter.patch("/avatars", upload.single("avatar"), auditToken, usersAvatar);
 
 export default authRouter;
