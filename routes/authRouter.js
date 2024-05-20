@@ -5,7 +5,10 @@ import {
   loginUser,
   logout,
   currentUser,
+  usersAvatar,
 } from "../controllers/authControllers.js";
+
+import upload from "../middlewares/upload.js";
 
 const authRouter = express.Router();
 const jsonParcer = express.json();
@@ -17,5 +20,7 @@ authRouter.post("/login", jsonParcer, loginUser);
 authRouter.post("/logout", auditToken, logout);
 
 authRouter.get("/current", auditToken, jsonParcer, currentUser);
+
+authRouter.patch("/avatars", upload.single("avatar"), auditToken, usersAvatar);
 
 export default authRouter;
