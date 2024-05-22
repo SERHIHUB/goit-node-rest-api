@@ -10,7 +10,12 @@ export const userLoginSchema = Joi.object({
   email: Joi.string().email().required(),
 });
 
+export const verifySchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
 export default {
   userRegisterSchema,
   userLoginSchema,
+  verifySchema,
 };

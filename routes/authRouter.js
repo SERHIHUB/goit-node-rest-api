@@ -2,6 +2,8 @@ import express from "express";
 import auditToken from "../middlewares/auditToken.js";
 import {
   registerUser,
+  verifyEmail,
+  verify,
   loginUser,
   logout,
   currentUser,
@@ -14,6 +16,10 @@ const authRouter = express.Router();
 const jsonParcer = express.json();
 
 authRouter.post("/register", jsonParcer, registerUser);
+
+authRouter.get("/verify/:verificationToken", verifyEmail);
+
+authRouter.post("/verify", verify);
 
 authRouter.post("/login", jsonParcer, loginUser);
 

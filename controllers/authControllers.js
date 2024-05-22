@@ -5,11 +5,14 @@ import * as fs from "node:fs/promises";
 import path from "node:path";
 import gravatar from "gravatar";
 import Jimp from "jimp";
+import crypto from "node:crypto";
 
+import mail from "../helpers/sendEmail.js";
 import User from "../models/user.js";
 import {
   userLoginSchema,
   userRegisterSchema,
+  verifySchema,
 } from "../schemas/usersSchemas.js";
 
 export async function registerUser(req, res, next) {
@@ -29,16 +32,83 @@ export async function registerUser(req, res, next) {
 
     const passwordHash = await bcrypt.hash(password, 10);
     const avatarURL = gravatar.url(email);
+    const verifyToken = crypto.randomUUID();
 
     const user = await User.create({
       email,
       password: passwordHash,
       avatarURL,
+      verificationToken: verifyToken,
+    });
+
+    mail.sendMail({
+      to: email,
+      from: "serhii.24@meta.ua",
+      subject: "Hello from Node.js",
+      html: `<h4>For mail confirm, please follow the <a href="http://localhost:3000/users/verify/${verifyToken}">link</a> </h4>`,
+      text: `For mail confirm, please follow the link http://localhost:3000/users/verify/${verifyToken}`,
     });
 
     res
       .status(201)
       .send({ user: { email: user.email, subscription: user.subscription } });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function verifyEmail(req, res, next) {
+  const { verificationToken } = req.params;
+
+  try {
+    const user = await User.findOne({ verificationToken: verificationToken });
+
+    if (user === null) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    await User.findOneAndUpdate(
+      { verificationToken: verificationToken },
+      { verify: true, verificationToken: null }
+    );
+
+    res.status(200).send({ message: "Verification successful" });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function verify(req, res, next) {
+  const { email } = req.body;
+
+  const { error } = verifySchema.validate(req.body);
+  if (typeof error !== "undefined") {
+    return res.status(400).send({ message: error.message });
+  }
+
+  if (!email) {
+    return res.status(400).json({ message: "missing required field email" });
+  }
+
+  try {
+    const user = await User.findOne({ email: email });
+    const verifyToken = user.verificationToken;
+
+    if (user.verify) {
+      return res
+        .status(400)
+        .json({ message: "Verification has already been passed" });
+    }
+
+    mail.sendMail({
+      to: email,
+      from: "serhii.24@meta.ua",
+      subject: "Hello from Node.js",
+      html: `<h4>For mail confirm, please follow the <a href="http://localhost:3000/users/verify/${verifyToken}">link</a> </h4>`,
+      text: `For mail confirm, please follow the link http://localhost:3000/users/verify/${verifyToken}`,
+    });
+
+    res.status(200).send({ message: "Verification email sent" });
   } catch (error) {
     next(error);
   }
@@ -63,6 +133,10 @@ export async function loginUser(req, res, next) {
 
     if (isMatch === false) {
       return res.status(401).send({ message: "Email or password is wrong" });
+    }
+
+    if (user.verify === false) {
+      return res.status(401).send({ message: "Confirm your email" });
     }
 
     const token = jwt.sign(
@@ -126,6 +200,8 @@ export async function usersAvatar(req, res, next) {
 
 export default {
   registerUser,
+  verifyEmail,
+  verify,
   loginUser,
   logout,
   currentUser,
